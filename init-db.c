@@ -2,9 +2,9 @@
 
 int main(int argc, char **argv)
 {
-	char *sha1_dir = getenv(DB_ENVIRONMENT), *path;
+	char *sha1_dir = getenv(DB_ENVIRONMENT), *path; // 仅初始化 char *sha1_dir，char *path 未初始化
 	int len, i, fd;
-
+	// 尝试创建 .dirchache 文件夹
 	if (mkdir(".dircache", 0700) < 0) {
 		perror("unable to create .dircache");
 		exit(1);
@@ -39,7 +39,7 @@ int main(int argc, char **argv)
 	path = malloc(len + 40);
 	memcpy(path, sha1_dir, len);
 	for (i = 0; i < 256; i++) {
-		sprintf(path+len, "/%02x", i);
+		sprintf(path+len, "/%02x", i); // .dircache/objects/%02x。格式：以两位十六进制数的形式输出，不足两位时在前面补0
 		if (mkdir(path, 0700) < 0) {
 			if (errno != EEXIST) {
 				perror(path);

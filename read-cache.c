@@ -186,17 +186,17 @@ static int error(const char * string)
 
 static int verify_hdr(struct cache_header *hdr, unsigned long size)
 {
-	SHA_CTX c;
+	SHA_CTX c; // 声明了一个SHA1哈希计算的上下文结构体
 	unsigned char sha1[20];
 
 	if (hdr->signature != CACHE_SIGNATURE)
 		return error("bad signature");
 	if (hdr->version != 1)
 		return error("bad version");
-	SHA1_Init(&c);
-	SHA1_Update(&c, hdr, offsetof(struct cache_header, sha1));
-	SHA1_Update(&c, hdr+1, size - sizeof(*hdr));
-	SHA1_Final(sha1, &c);
+	SHA1_Init(&c); // 初始化SHA1哈希计算的上下文
+	SHA1_Update(&c, hdr, offsetof(struct cache_header, sha1)); // 更新哈希计算上下文，将缓存头部结构体的部分（从开头到sha1字段之前）加入到哈希计算中
+	SHA1_Update(&c, hdr+1, size - sizeof(*hdr)); // 更新哈希计算上下文，将除了头部结构体之后的数据（即缓存的主体部分）加入到哈希计算中
+	SHA1_Final(sha1, &c); // 将计算得到的SHA1哈希值存储在sha1数组中
 	if (memcmp(sha1, hdr->sha1, 20))
 		return error("bad header sha1");
 	return 0;

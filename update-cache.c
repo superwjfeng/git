@@ -73,11 +73,12 @@ static int add_cache_entry(struct cache_entry *ce)
 	return 0;
 }
 
+// 对文件进行压缩和计算SHA-1校验和，并将结果写入索引
 static int index_fd(const char *path, int namelen, struct cache_entry *ce, int fd, struct stat *st)
 {
 	z_stream stream;
 	int max_out_bytes = namelen + st->st_size + 200;
-	void *out = malloc(max_out_bytes);
+	void *out = malloc(max_out_bytes); // 动态分配了一些内存空间来存储压缩后的数据和一些元数据
 	void *metadata = malloc(namelen + 200);
 	void *in = mmap(NULL, st->st_size, PROT_READ, MAP_PRIVATE, fd, 0);
 	SHA_CTX c;
@@ -85,7 +86,7 @@ static int index_fd(const char *path, int namelen, struct cache_entry *ce, int f
 	close(fd);
 	if (!out || (int)(long)in == -1)
 		return -1;
-
+	// 初始化了一个 z_stream 结构来进行数据压缩，并使用 deflateInit 函数初始化压缩过程
 	memset(&stream, 0, sizeof(stream));
 	deflateInit(&stream, Z_BEST_COMPRESSION);
 
@@ -109,10 +110,11 @@ static int index_fd(const char *path, int namelen, struct cache_entry *ce, int f
 
 	deflateEnd(&stream);
 	
+	// 计算SHA1校验和并写入字段
 	SHA1_Init(&c);
 	SHA1_Update(&c, out, stream.total_out);
 	SHA1_Final(ce->sha1, &c);
-
+	
 	return write_sha1_buffer(ce->sha1, out, stream.total_out);
 }
 
@@ -219,7 +221,7 @@ int main(int argc, char **argv)
 {
 	int i, newfd, entries;
 
-	entries = read_cache();
+	entries = read_cache(); // 尝试读取、创建index文件
 	if (entries < 0) {
 		perror("cache corrupted");
 		return -1;
